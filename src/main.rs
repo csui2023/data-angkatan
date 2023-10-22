@@ -1,7 +1,8 @@
-use std::{collections::HashMap, env, fs, io::Write, sync::Arc};
+use std::{collections::HashMap, env, fs, io::Write};
 
 use convert_case::{Case, Casing};
 use image::EncodableLayout;
+use regex::Regex;
 use reqwest::header::HeaderMap;
 use serde::Serialize;
 
@@ -33,12 +34,10 @@ async fn main() {
         env::var("GOOGLE_API_KEY").unwrap().parse().unwrap(),
     );
 
-    let client = Arc::new(
-        reqwest::Client::builder()
-            .default_headers(headers)
-            .build()
-            .unwrap(),
-    );
+    let client = reqwest::Client::builder()
+        .default_headers(headers)
+        .build()
+        .unwrap();
 
     let result = client
         .get(format!(
@@ -57,9 +56,9 @@ async fn main() {
 
     for record in rdr.records() {
         let record = record.unwrap();
-        let client = Arc::clone(&client);
 
-        let id = &record[2].to_string();
+        let re = Regex::new(r"[^A-Za-z ]").unwrap();
+        let id = re.replace_all(&record[2].to_string(), "").to_string();
         let id = id.to_case(Case::Kebab);
 
         let mahasiswa = Mahasiswa {
