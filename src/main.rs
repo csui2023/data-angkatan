@@ -22,6 +22,8 @@ struct Mahasiswa {
     deskripsi: String,
     message: String,
     interests: Vec<String>,
+    #[serde(skip_serializing)]
+    pfp_file_id: String,
 }
 
 #[tokio::main]
@@ -78,17 +80,24 @@ async fn main() {
                 record[15].to_string(),
                 record[16].to_string(),
             ],
+            pfp_file_id: record[5].to_string(),
         };
 
         data.push(mahasiswa);
+    }
 
-        let filename = format!("./data/pfp/{}.png", id);
+    let stringified = serde_json::to_string_pretty(&data).unwrap();
+    let mut file = fs::File::create("./data/data.json").unwrap();
+    file.write_all(stringified.as_bytes()).unwrap();
+
+    for mhs in data {
+        let filename = format!("./data/pfp/{}.png", mhs.id);
         if fs::metadata(&filename).is_ok() {
-            println!("Skipping {}. Already exist.", id);
+            println!("Skipping {}. Already exist.", mhs.id);
             continue;
         }
 
-        let pfp_url = reqwest::Url::parse(&record[5]).unwrap();
+        let pfp_url = reqwest::Url::parse(&mhs.pfp_file_id).unwrap();
         let pair: HashMap<_, String> = pfp_url.query_pairs().into_owned().collect();
         let url = format!(
             "https://www.googleapis.com/drive/v3/files/{}",
@@ -112,15 +121,12 @@ async fn main() {
                 let img = img.resize(512, 512, image::imageops::FilterType::Lanczos3);
                 img.save(filename).unwrap();
 
-                println!("Saved {}.", id);
+                println!("Saved {}.", mhs.id);
             }
             Err(err) => {
-                println!("Error {}. {}.", id, err.to_string())
+                println!("Error {}. {}.", mhs.id, err.to_string());
+                break;
             }
         }
     }
-
-    let stringified = serde_json::to_string_pretty(&data).unwrap();
-    let mut file = fs::File::create("./data/data.json").unwrap();
-    file.write_all(stringified.as_bytes()).unwrap();
 }
