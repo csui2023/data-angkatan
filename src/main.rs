@@ -82,6 +82,12 @@ async fn main() {
 
         data.push(mahasiswa);
 
+        let filename = format!("./data/pfp/{}.png", id);
+        if fs::metadata(&filename).is_ok() {
+            println!("Skipping {}. Already exist.", id);
+            continue;
+        }
+
         let pfp_url = reqwest::Url::parse(&record[5]).unwrap();
         let pair: HashMap<_, String> = pfp_url.query_pairs().into_owned().collect();
         let url = format!(
@@ -104,7 +110,6 @@ async fn main() {
         match image::load_from_memory(bytes) {
             Ok(img) => {
                 let img = img.resize(512, 512, image::imageops::FilterType::Lanczos3);
-                let filename = format!("./data/pfp/{}.png", id);
                 img.save(filename).unwrap();
 
                 println!("Saved {}.", id);
