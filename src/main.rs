@@ -125,7 +125,7 @@ async fn main() {
             }
             Err(err) => {
                 println!("Error {}. {}.", mhs.id, err.to_string());
-                break;
+                // break;
             }
         }
     }
