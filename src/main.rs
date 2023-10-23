@@ -86,6 +86,7 @@ async fn main() {
         data.push(mahasiswa);
     }
 
+    data.sort_by(|a, b| a.nama_lengkap.cmp(&b.nama_lengkap));
     let stringified = serde_json::to_string_pretty(&data).unwrap();
     let mut file = fs::File::create("./data/data.json").unwrap();
     file.write_all(stringified.as_bytes()).unwrap();
