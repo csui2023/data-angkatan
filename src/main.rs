@@ -1,7 +1,7 @@
 use std::{collections::HashMap, env, fs, io::Write};
 
 use convert_case::{Case, Casing};
-use image::EncodableLayout;
+use image::{EncodableLayout, GenericImageView};
 use regex::Regex;
 use reqwest::header::HeaderMap;
 use serde::Serialize;
@@ -119,6 +119,14 @@ async fn main() {
 
         match image::load_from_memory(bytes) {
             Ok(img) => {
+                let (x, y) = img.dimensions();
+
+                let img = if x < y {
+                    img.crop_imm(0, (y - x) / 2, x, x)
+                } else {
+                    img.crop_imm((x - y) / 2, 0, y, y)
+                };
+
                 let img = img.resize(512, 512, image::imageops::FilterType::Lanczos3);
                 img.save(filename).unwrap();
 
