@@ -127,8 +127,11 @@ async fn main() {
                     img.crop_imm((x - y) / 2, 0, y, y)
                 };
 
-                let img = img.resize(512, 512, image::imageops::FilterType::Lanczos3);
-                img.save(filename).unwrap();
+                let img = img.resize(256, 256, image::imageops::FilterType::Lanczos3);
+                let img = img.into_rgb8();
+                if let Err(e) = img.save(format!("./data/pfp/{}.jpg", mhs.id)) {
+                    println!("Error {}. {}.", mhs.id, e.to_string());
+                }
 
                 println!("Saved {}.", mhs.id);
             }
